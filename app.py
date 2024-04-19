@@ -62,6 +62,10 @@ def get_vk_newsfeed(query, start_time, end_time, access_token):
 # Streamlit UI
 st.title("VK Newsfeed Scraper")
 
+st.write("""
+Код `%23` в начале запроса, означает `#`, соответственно, если необходимо поставить между словами пробел, то нужно использовать код `%20`, например `советское%20прошлое` (заменяется кодом [ACSII](https://wm-school.ru/html/html_url_acsii.html)).
+""")
+
 query = st.text_input("Enter VK query", "%23советскиеКосмонавты")
 # start_date = st.date_input("Start date", datetime.date(2023, 10, 1))
 # end_date = st.date_input("End date", datetime.date(2023, 12, 31))
