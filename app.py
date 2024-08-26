@@ -114,6 +114,7 @@ def filter_by_sentiment(vk_df, sentiment_threshold):
     return vk_df[vk_df['sentiment'] >= sentiment_threshold]
 
 def perform_sentiment_analysis(vk_df):
+    # Анализ тональностей не удаляет предыдущие данные
     st.write("Performing sentiment analysis...")
     vk_df['sentiment'] = vk_df['text'].apply(analyze_sentiment)
     sentiment_avg = vk_df['sentiment'].mean()
