@@ -110,12 +110,24 @@ def plot_graphs(vk_df):
 
     return vk_df
 
+def filter_by_sentiment(vk_df, sentiment_threshold):
+    return vk_df[vk_df['sentiment'] >= sentiment_threshold]
+
 def perform_sentiment_analysis(vk_df):
     st.write("Performing sentiment analysis...")
     vk_df['sentiment'] = vk_df['text'].apply(analyze_sentiment)
     sentiment_avg = vk_df['sentiment'].mean()
     st.write(f"Average sentiment polarity: {sentiment_avg}")
-    st.dataframe(vk_df[['date', 'text', 'sentiment']])
+
+    # Фильтрация по тональности
+    sentiment_threshold = st.slider("Filter by sentiment polarity", min_value=-1.0, max_value=1.0, value=0.0, step=0.1)
+    filtered_df = filter_by_sentiment(vk_df, sentiment_threshold)
+
+    st.write(f"Filtered data with sentiment polarity >= {sentiment_threshold}")
+    st.dataframe(filtered_df[['date', 'text', 'sentiment']])
+
+    # Построение графиков после фильтрации
+    plot_graphs(filtered_df)
 
 # Streamlit UI
 st.title("VK Newsfeed Scraper")
@@ -149,6 +161,8 @@ if st.button("Fetch Data"):
             st.success("Data fetched successfully!")
             
             # Кнопка для анализа тональностей появляется после загрузки данных и отображения графиков
+            st.markdown("---")
+            st.subheader("Sentiment Analysis")
             if st.button("Analyze Sentiment"):
                 perform_sentiment_analysis(vk_df)
         except Exception as e:
