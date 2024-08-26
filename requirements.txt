@@ -1,5 +1,5 @@
-streamlit
-requests
-pandas
-plotly
-textblob
+streamlit==1.25.0
+requests==2.31.0
+pandas==2.1.1
+plotly==5.17.0
+dostoevsky==0.5.0
