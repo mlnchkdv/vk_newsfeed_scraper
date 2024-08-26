@@ -70,19 +70,24 @@ def plot_graphs(vk_df):
     st.dataframe(vk_df)
     st.markdown('ER View is calculated as: $ER\\ View = \\frac{Likes + Comments + Reposts}{Views} \\times 100$')
 
-    # Отдельные графики
-    fig1 = go.Figure(data=go.Scatter(x=df_grouped['date'], y=df_grouped['count'], mode='lines'))
-    fig1.update_layout(title='Number of Publications', xaxis_title='Date', yaxis_title='Count')
+    # Первый график с четырьмя показателями
+    fig1 = go.Figure()
+    fig1.add_trace(go.Scatter(x=vk_df['date'], y=vk_df['likes.count'], mode='lines', name='Likes'))
+    fig1.add_trace(go.Scatter(x=vk_df['date'], y=vk_df['reposts.count'], mode='lines', name='Reposts'))
+    fig1.add_trace(go.Scatter(x=vk_df['date'], y=vk_df['views.count'], mode='lines', name='Views'))
+    fig1.add_trace(go.Scatter(x=vk_df['date'], y=vk_df['comments.count'], mode='lines', name='Comments'))
+    fig1.update_layout(
+        title='Engagement Metrics',
+        xaxis_title='Date',
+        yaxis_title='Count',
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
     st.plotly_chart(fig1)
 
-    fig2 = go.Figure(data=go.Scatter(x=metrics['date'], y=metrics['er_view'], mode='lines'))
-    fig2.update_layout(title='Engagement Rate (ER View)', xaxis_title='Date', yaxis_title='Engagement Rate')
-    st.plotly_chart(fig2)
-
-    # Объединенный график
+    # Объединенный график с контрастными цветами
     fig_combined = go.Figure()
-    fig_combined.add_trace(go.Scatter(x=df_grouped['date'], y=df_grouped['count'], mode='lines', name='Number of Publications'))
-    fig_combined.add_trace(go.Scatter(x=metrics['date'], y=metrics['er_view'], mode='lines', name='Engagement Rate (ER View)', yaxis='y2'))
+    fig_combined.add_trace(go.Scatter(x=df_grouped['date'], y=df_grouped['count'], mode='lines', name='Number of Publications', line=dict(color='blue')))
+    fig_combined.add_trace(go.Scatter(x=metrics['date'], y=metrics['er_view'], mode='lines', name='Engagement Rate (ER View)', yaxis='y2', line=dict(color='orange')))
     fig_combined.update_layout(
         title='Dynamics of Publications and Engagement Rate',
         xaxis_title='Date',
@@ -93,12 +98,13 @@ def plot_graphs(vk_df):
         ),
         yaxis2=dict(
             title='Engagement Rate',
-            titlefont=dict(color='lightblue'),
-            tickfont=dict(color='lightblue'),
+            titlefont=dict(color='orange'),
+            tickfont=dict(color='orange'),
             overlaying='y',
             side='right'
         ),
-        legend_title='Metrics'
+        legend_title='Metrics',
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
     )
     st.plotly_chart(fig_combined)
 
@@ -141,13 +147,11 @@ if st.button("Fetch Data"):
                 mime='text/csv',
             )
             st.success("Data fetched successfully!")
+            
+            # Кнопка для анализа тональностей появляется после загрузки данных и отображения графиков
+            if st.button("Analyze Sentiment"):
+                perform_sentiment_analysis(vk_df)
         except Exception as e:
             st.error(f"An error occurred: {e}")
     else:
         st.error("Please enter a valid VK Access Token.")
-
-if st.button("Analyze Sentiment"):
-    if 'vk_df' in locals():
-        perform_sentiment_analysis(vk_df)
-    else:
-        st.error("No data available. Please fetch the data first.")
