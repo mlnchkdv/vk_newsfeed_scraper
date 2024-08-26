@@ -5,7 +5,12 @@ import pandas as pd
 import datetime
 import time
 import plotly.graph_objs as go
-from textblob import TextBlob
+from dostoevsky.models import FastTextSocialNetworkModel
+from dostoevsky.tokenization import RegexTokenizer
+
+# Инициализация модели для анализа тональностей
+tokenizer = RegexTokenizer()
+model = FastTextSocialNetworkModel(tokenizer=tokenizer)
 
 def get_unixtime_from_datetime(date_time):
     return str(int(time.mktime(date_time.timetuple())))
@@ -49,8 +54,10 @@ def get_vk_newsfeed(query, start_time, end_time, access_token):
 
     return df
 
-def analyze_sentiment(text):
-    return TextBlob(text).sentiment.polarity
+def analyze_sentiment_with_dostoevsky(texts):
+    results = model.predict(texts, k=2)  # Анализируем тексты
+    sentiments = [max(result, key=result.get) for result in results]  # Получаем тональности
+    return sentiments
 
 def plot_graphs(vk_df):
     vk_df['date'] = pd.to_datetime(vk_df['date'], unit='s')
@@ -110,21 +117,19 @@ def plot_graphs(vk_df):
 
     return vk_df
 
-def filter_by_sentiment(vk_df, sentiment_threshold):
-    return vk_df[vk_df['sentiment'] >= sentiment_threshold]
+def filter_by_sentiment(vk_df, sentiment_filter):
+    return vk_df[vk_df['sentiment'] == sentiment_filter]
 
 def perform_sentiment_analysis(vk_df):
-    # Анализ тональностей не удаляет предыдущие данные
     st.write("Performing sentiment analysis...")
-    vk_df['sentiment'] = vk_df['text'].apply(analyze_sentiment)
-    sentiment_avg = vk_df['sentiment'].mean()
-    st.write(f"Average sentiment polarity: {sentiment_avg}")
+    vk_df['sentiment'] = analyze_sentiment_with_dostoevsky(vk_df['text'].tolist())
+    st.write("Sentiment analysis completed.")
 
     # Фильтрация по тональности
-    sentiment_threshold = st.slider("Filter by sentiment polarity", min_value=-1.0, max_value=1.0, value=0.0, step=0.1)
-    filtered_df = filter_by_sentiment(vk_df, sentiment_threshold)
+    sentiment_filter = st.selectbox("Filter by sentiment", options=['positive', 'negative', 'neutral'])
+    filtered_df = filter_by_sentiment(vk_df, sentiment_filter)
 
-    st.write(f"Filtered data with sentiment polarity >= {sentiment_threshold}")
+    st.write(f"Filtered data with sentiment: {sentiment_filter}")
     st.dataframe(filtered_df[['date', 'text', 'sentiment']])
 
     # Построение графиков после фильтрации
