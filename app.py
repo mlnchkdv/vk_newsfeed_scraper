@@ -5,10 +5,10 @@ import pandas as pd
 import datetime
 import time
 import plotly.graph_objs as go
-from ru_sentiment import SentimentAnalyzer
+from transformers import pipeline
 
 # Инициализация модели для анализа тональностей
-analyzer = SentimentAnalyzer()
+sentiment_pipeline = pipeline("sentiment-analysis", model="blanchefort/rubert-base-cased-sentiment")
 
 def get_unixtime_from_datetime(date_time):
     return str(int(time.mktime(date_time.timetuple())))
@@ -52,9 +52,9 @@ def get_vk_newsfeed(query, start_time, end_time, access_token):
 
     return df
 
-def analyze_sentiment_with_ru_sentiment(texts):
-    sentiments = analyzer.predict(texts)
-    return sentiments
+def analyze_sentiment_with_transformers(texts):
+    sentiments = sentiment_pipeline(texts)
+    return [result['label'].lower() for result in sentiments]
 
 def plot_graphs(vk_df):
     vk_df['date'] = pd.to_datetime(vk_df['date'], unit='s')
@@ -119,7 +119,7 @@ def filter_by_sentiment(vk_df, sentiment_filter):
 
 def perform_sentiment_analysis(vk_df):
     st.write("Performing sentiment analysis...")
-    vk_df['sentiment'] = analyze_sentiment_with_ru_sentiment(vk_df['text'].tolist())
+    vk_df['sentiment'] = analyze_sentiment_with_transformers(vk_df['text'].tolist())
     st.write("Sentiment analysis completed.")
 
     # Фильтрация по тональности
