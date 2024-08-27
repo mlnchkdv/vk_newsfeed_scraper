@@ -5,12 +5,10 @@ import pandas as pd
 import datetime
 import time
 import plotly.graph_objs as go
-from dostoevsky.models import FastTextSocialNetworkModel
-from dostoevsky.tokenization import RegexTokenizer
+from ru_sentiment import SentimentAnalyzer
 
 # Инициализация модели для анализа тональностей
-tokenizer = RegexTokenizer()
-model = FastTextSocialNetworkModel(tokenizer=tokenizer)
+analyzer = SentimentAnalyzer()
 
 def get_unixtime_from_datetime(date_time):
     return str(int(time.mktime(date_time.timetuple())))
@@ -54,9 +52,8 @@ def get_vk_newsfeed(query, start_time, end_time, access_token):
 
     return df
 
-def analyze_sentiment_with_dostoevsky(texts):
-    results = model.predict(texts, k=2)  # Анализируем тексты
-    sentiments = [max(result, key=result.get) for result in results]  # Получаем тональности
+def analyze_sentiment_with_ru_sentiment(texts):
+    sentiments = analyzer.predict(texts)
     return sentiments
 
 def plot_graphs(vk_df):
@@ -122,7 +119,7 @@ def filter_by_sentiment(vk_df, sentiment_filter):
 
 def perform_sentiment_analysis(vk_df):
     st.write("Performing sentiment analysis...")
-    vk_df['sentiment'] = analyze_sentiment_with_dostoevsky(vk_df['text'].tolist())
+    vk_df['sentiment'] = analyze_sentiment_with_ru_sentiment(vk_df['text'].tolist())
     st.write("Sentiment analysis completed.")
 
     # Фильтрация по тональности
