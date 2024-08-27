@@ -2,4 +2,5 @@ streamlit
 requests
 pandas
 plotly
-ru-sentiment
+transformers
+torch
